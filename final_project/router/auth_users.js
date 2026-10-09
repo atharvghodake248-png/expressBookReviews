@@ -8,19 +8,15 @@ const users = [];
 
 const SECRET = 'fingerprint_customer';
 
-// Check whether a username is already registered
-const isValid = (username) => {
-  return users.some(user => user.username === username);
-};
+const isValid = (username) =>
+  users.some((user) => user.username === username);
 
-// Verify username and password
-const authenticatedUser = (username, password) => {
-  return users.some(
-    user => user.username === username && user.password === password
+const authenticatedUser = (username, password) =>
+  users.some(
+    (user) => user.username === username && user.password === password
   );
-};
 
-// Login: registered users only
+// Login
 regd_users.post('/login', (req, res) => {
   const { username, password } = req.body || {};
 
@@ -44,11 +40,34 @@ regd_users.post('/login', (req, res) => {
   });
 });
 
-// Add or update a review (authentication required)
+// Add or update a review
+regd_users.put('/auth/review/:isbn', (req, res) => {
+  const book = books[req.params.isbn];
 
+  if (!book) {
+    return res.status(404).json({ message: 'Book not found.' });
+  }
+
+  const review = req.body && req.body.review;
+
+  if (typeof review !== 'string' || !review.trim()) {
+    return res.status(400).json({
+      message: 'A non-empty review is required.'
+    });
+  }
+
+  const username = req.user.username;
+  book.reviews[username] = review.trim();
+
+  return res.status(200).json({
+    message: 'Review added or updated successfully.',
+    reviews: book.reviews
+  });
+});
+
+// Delete your own review
 regd_users.delete('/auth/review/:isbn', (req, res) => {
-  const isbn = req.params.isbn;
-  const book = books[isbn];
+  const book = books[req.params.isbn];
 
   if (!book) {
     return res.status(404).json({ message: 'Book not found.' });
@@ -69,7 +88,6 @@ regd_users.delete('/auth/review/:isbn', (req, res) => {
     reviews: book.reviews
   });
 });
-
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;

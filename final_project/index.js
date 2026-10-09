@@ -7,21 +7,21 @@ const customer_routes = require('./router/auth_users.js').authenticated;
 const genl_routes = require('./router/general.js').general;
 
 const app = express();
+const SECRET = 'fingerprint_customer';
 
 app.use(express.json());
 
-const SECRET = 'fingerprint_customer';
-
+// Session middleware
 app.use(
   '/customer',
   session({
     secret: SECRET,
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: false
   })
 );
 
-// Validate JWT for customer review routes
+// Authenticate protected customer routes
 app.use('/customer/auth/*', (req, res, next) => {
   const authHeader = req.headers.authorization;
 
