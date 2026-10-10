@@ -1,5 +1,6 @@
-
+﻿
 const express = require('express');
+const axios = require('axios');
 const books = require('./booksdb.js');
 const { isValid, users } = require('./auth_users.js');
 
@@ -82,4 +83,39 @@ public_users.get('/review/:isbn', (req, res) => {
   return res.status(200).json(book.reviews);
 });
 
+
+// Search an external book catalogue using Axios
+public_users.get('/external-books/:query', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://openlibrary.org/search.json',
+      {
+        params: {
+          q: req.params.query,
+          limit: 10
+        },
+        timeout: 10000
+      }
+    );
+
+    const results = (response.data.docs || []).map((book) => ({
+      title: book.title,
+      author: book.author_name || [],
+      first_publish_year: book.first_publish_year || null,
+      isbn: book.isbn ? book.isbn[0] : null,
+      key: book.key
+    }));
+
+    return res.status(200).json(results);
+  } catch (error) {
+    const status = error.response ? error.response.status : 502;
+
+    return res.status(502).json({
+      message: 'Unable to fetch books from Open Library.',
+      upstreamStatus: status,
+      error: error.code || error.message
+    });
+  }
+});
 module.exports.general = public_users;
+

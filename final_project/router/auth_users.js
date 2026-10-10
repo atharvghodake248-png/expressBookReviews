@@ -1,4 +1,4 @@
-
+﻿
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const books = require('./booksdb.js');
@@ -35,7 +35,7 @@ regd_users.post('/login', (req, res) => {
   const token = jwt.sign({ username }, SECRET, { expiresIn: '1h' });
 
   return res.status(200).json({
-    message: 'Login successful.',
+    message: 'Login successful!',
     token
   });
 });
@@ -60,9 +60,8 @@ regd_users.put('/auth/review/:isbn', (req, res) => {
   book.reviews[username] = review.trim();
 
   return res.status(200).json({
-    message: 'Review added or updated successfully.',
-    reviews: book.reviews
-  });
+  message: `Review for ISBN ${req.params.isbn} deleted`
+});
 });
 
 // Delete your own review
@@ -84,7 +83,7 @@ regd_users.delete('/auth/review/:isbn', (req, res) => {
   delete book.reviews[username];
 
   return res.status(200).json({
-    message: 'Review deleted successfully.',
+    message: `Review for ISBN ${req.params.isbn} deleted successfully.`,
     reviews: book.reviews
   });
 });
@@ -92,3 +91,4 @@ regd_users.delete('/auth/review/:isbn', (req, res) => {
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
+
